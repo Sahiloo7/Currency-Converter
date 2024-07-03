@@ -1,5 +1,4 @@
-const BASE_URL =
-  "https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies";
+const BASE_URL = "https://v6.exchangerate-api.com/v6/5b3e753a3e29eeac3df096a9/latest";
 
 const dropdowns = document.querySelectorAll(".dropdown select");
 const btn = document.querySelector("form button");
@@ -32,13 +31,23 @@ const updateExchangeRate = async () => {
     amtVal = 1;
     amount.value = "1";
   }
-  const URL = `${BASE_URL}/${fromCurr.value.toLowerCase()}/${toCurr.value.toLowerCase()}.json`;
-  let response = await fetch(URL);
+  const fromURL = `${BASE_URL}/${fromCurr.value}`;
+  let response = await fetch(fromURL);
+  if (!response.ok) {
+    msg.innerText = `Error: ${response.statusText}`;
+    return;
+  }
   let data = await response.json();
-  let rate = data[toCurr.value.toLowerCase()];
+  let fromRate = data.conversion_rates[fromCurr.value];
+  let toRate = data.conversion_rates[toCurr.value];
 
-  let finalAmount = amtVal * rate;
-  msg.innerText = `${amtVal} ${fromCurr.value} = ${finalAmount} ${toCurr.value}`;
+  if (!fromRate || !toRate) {
+    msg.innerText = `Error: Rate not available for ${fromCurr.value} or ${toCurr.value}`;
+    return;
+  }
+
+  let finalAmount = amtVal * (toRate / fromRate);
+  msg.innerText = `${amtVal} ${fromCurr.value} = ${finalAmount.toFixed(2)} ${toCurr.value}`;
 };
 
 const updateFlag = (element) => {
